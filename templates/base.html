@@ -1,11 +1,48 @@
 <!doctype html>
 <html>
 <head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ratings</title>
 </head>
 
 <body>
-  <h1>Ratings</h1>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">Movierator</a>
+      </div>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li><a href="#">About</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if session %}
+
+        {% if session.email %}
+        <li><a href="/logout">Logout</a></li>
+        {% endif %}
+        {% else %}
+        <li><a href="/sign-in">Login</a></li>
+        <li><a href="/sign-up">Sign Up</a></li>
+
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+<div class="container">
     <ul>
     {% for message in get_flashed_messages() %}
       <li>{{ message }}</li>
@@ -14,6 +51,10 @@
 
 
   {% block content %} put your content here {% endblock %}
-
+</div>
+<script>
+var x = document.cookie;
+console.log(x);
+</script>
 </body>
 </html>

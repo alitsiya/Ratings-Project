@@ -63,17 +63,11 @@ def sign_in():
     existing_user = User.query.filter_by(email = email).first()
 
     print existing_user
+
     if not existing_user:
-
     # if user doesn't exist - add user to db  and redirect
-        user = User(email=email,
-                    password=password,
-                    )
-        print "\nAdded to Database \n"
-        db.session.add(user)
-        db.session.commit()
-        flash("%s has been added" % email) 
-
+        flash("You're not registered. Do you want to sign up?")
+        return redirect('/sign-up')
     else:    
         if existing_user.password != password:
             print "\n Incorrect password\n\n"
@@ -88,12 +82,41 @@ def sign_in():
 
     return redirect("/")
 
+@app.route('/sign-up')
+def sign_up_form():
+    """Sign Up page"""
+
+    return render_template("sign_up.html")
+
+@app.route('/sign-up', methods=['POST'])
+def sign_up():
+    """Handles Sign Up page input"""
+    email = request.form.get('email')
+    password = request.form.get('password')
+    age = request.form.get('age')
+    occupation = request.form.get('occupation')
+    zipcode = request.form.get('zipcode')
+
+    user = User(email=email,
+                password=password,
+                age=age,
+                occupation=occupation,
+                zipcode=zipcode,
+                    )
+
+    print "\nAdded to Database \n"
+
+    db.session.add(user)
+    db.session.commit()
+    session['email'] = email
+    flash("%s has been added" % email) 
+    return redirect('/')
+
 @app.route('/logout')
 def sign_out():
     """Log out users"""
-
+    
     if session: 
-        
         del session['email']
         flash("The user has logged out")
     
