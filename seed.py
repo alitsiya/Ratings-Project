@@ -54,7 +54,7 @@ def load_movies():
             release_date = datetime.datetime.strptime(release_str, "%d-%b-%Y")
         else:
             release_date=None
-
+        movie_title = movie_title[:-7]
         movie = Movie(movie_id=movie_id,
         movie_title=movie_title, release_date=release_date, url=url)
 
