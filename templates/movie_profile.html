@@ -4,7 +4,10 @@
     <h2>Movie's Details</h2>
     {{ movie.movie_title }} <br>
     {{ movie.release_date }} <br>
-    <a href="{{ movie.url }}">IMDB</a>
+    <a href="{{ movie.url }}">IMDB</a><br>
+    {% if score %}
+    Your rating: {{ score }}
+    {% endif %}
     {% if session %}
     <br>
     <h3>Rate the movie:</h3>

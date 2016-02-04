@@ -60,35 +60,51 @@ def movie_list():
     return render_template("movie_list.html", movies=movies)
 
 
-@app.route("/movies/<int:movie_id>", methods=['GET','POST'])
+@app.route("/movies/<int:movie_id>", methods=['GET'])
 def show_movies(movie_id):
     """Show movies's details"""
+
+    movie = Movie.query.get(movie_id)
+    return render_template("movie_profile.html", movie=movie, score=None,
+                                                )
+
+@app.route("/movies/<int:movie_id>", methods=['POST'])
+def update_movie_rating(movie_id):
+    """Update movie rating """
 
     user_rating = request.form.get("rating")
 
     if user_rating:
         print '\n' + user_rating + '\n'
-        email = session['email']
+        email = session['email'] 
         user = User.query.filter_by(email=email).all()
-        print user[0].user_id
+        print user[0].user_id #user_id
 
-        rating = Rating.query.filter(Rating.movie_id == movie_id, Rating.user_id == user[0].user_id).all()
-
-        rating.score = user_rating
+        rating = Rating.query.filter_by(movie_id = movie_id, user_id = user[0].user_id).all()
+        print rating[0].score
+        #if user rated movie, then update rating, else create new value into Ratings table in db
+        if rating:
+            rating[0].score = user_rating
+            print rating[0].score
+        else:
+            rating = Rating(score=user_rating,
+                            movie_id=movie_id,
+                            user_id=user[0].user_id,
+                            )
+            db.session.add(rating)
+        print rating
+        # rating.score = user_rating
         # ratings.update().\
         #     where(ratings.movie_id == movie_id, user_id == user.user_id).\
         #     values(score=user_rating)
 
         print "\nRating updated \n"
 
-        db.session.commit()
-        # db.session.add(user)
-        # db.session.query(Rating).add(rating)
+    db.session.commit()
 
     movie = Movie.query.get(movie_id)
-    return render_template("movie_profile.html", movie=movie,
-                                                )
 
+    return render_template("movie_profile.html", movie=movie, score=rating[0].score)
 
 @app.route('/sign-in', methods=['GET'])
 def render_sign_in():
