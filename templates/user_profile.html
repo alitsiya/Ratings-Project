@@ -2,10 +2,12 @@
 {% block content %}
 
     <h2>User's Profile</h2>
-    {{ age }} {{ zipcode }} {{ occupation }} <br>
+    Email: {{ email }} <br>
+
+    Age:{{ age }} <br> Zipcode:{{ zipcode }} <br> Occupation: {{ occupation }} <br>
     <ul>
       {% for movie in movies %}
-      <li>{{ movie.title }} {{ movie.score }}</li>
+      <li>{{ movie[0] }} {{ movie[1] }}</li>
       {% endfor %}
     </ul>
 

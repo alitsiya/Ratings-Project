@@ -28,6 +28,7 @@ def user_list():
     """Show list of users."""
 
     users = User.query.all()
+
     return render_template("user_list.html", users=users)
 
 
@@ -35,15 +36,59 @@ def user_list():
 def show_user(user_id):
     """Show user's profile"""
 
-    print user_id
     user = Rating.query.get(user_id)
-    print user
-    return "Test"
-    # return render_template("user_profile.html", age=user.age,
-    #                                             zipcode=user.zipcode,
-    #                                             occupation=user.occupation,
-    #                                             movies="",
-    #                                             )
+
+    user_movie_list = Rating.query.filter_by(user_id = user_id).all()
+    movies = []
+    for user_movie in user_movie_list:
+        movies.append((user_movie.movie.movie_title, user_movie.score))
+
+    return render_template("user_profile.html", email=user.user.email,
+                                                age=user.user.age,
+                                                zipcode=user.user.zipcode,
+                                                occupation=user.user.occupation,
+                                                movies=movies,
+                                                )
+
+
+@app.route("/movies")
+def movie_list():
+    """Show list of movies."""
+
+    movies = Movie.query.order_by('movie_title').all()
+
+    return render_template("movie_list.html", movies=movies)
+
+
+@app.route("/movies/<int:movie_id>", methods=['GET','POST'])
+def show_movies(movie_id):
+    """Show movies's details"""
+
+    user_rating = request.form.get("rating")
+
+    if user_rating:
+        print '\n' + user_rating + '\n'
+        email = session['email']
+        user = User.query.filter_by(email=email).all()
+        print user[0].user_id
+
+        rating = Rating.query.filter(Rating.movie_id == movie_id, Rating.user_id == user[0].user_id).all()
+
+        rating.score = user_rating
+        # ratings.update().\
+        #     where(ratings.movie_id == movie_id, user_id == user.user_id).\
+        #     values(score=user_rating)
+
+        print "\nRating updated \n"
+
+        db.session.commit()
+        # db.session.add(user)
+        # db.session.query(Rating).add(rating)
+
+    movie = Movie.query.get(movie_id)
+    return render_template("movie_profile.html", movie=movie,
+                                                )
+
 
 @app.route('/sign-in', methods=['GET'])
 def render_sign_in():
@@ -60,7 +105,7 @@ def sign_in():
     print email
     print password
     # if user exist - log in and redirect to homepage
-    existing_user = User.query.filter_by(email = email).first()
+    existing_user = User.query.filter_by(email = email).all()
 
     print existing_user
 
@@ -115,7 +160,7 @@ def sign_up():
 @app.route('/logout')
 def sign_out():
     """Log out users"""
-    
+
     if session: 
         del session['email']
         flash("The user has logged out")

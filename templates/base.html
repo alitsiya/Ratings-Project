@@ -28,9 +28,8 @@
       <ul class="nav navbar-nav navbar-right">
         {% if session %}
 
-        {% if session.email %}
         <li><a href="/logout">Logout</a></li>
-        {% endif %}
+
         {% else %}
         <li><a href="/sign-in">Login</a></li>
         <li><a href="/sign-up">Sign Up</a></li>

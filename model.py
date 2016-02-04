@@ -40,25 +40,7 @@ class Movie(db.Model):
     movie_title = db.Column(db.String(100), nullable=False)
     release_date = db.Column(db.DateTime, nullable=True)
     url = db.Column(db.String(150), nullable=True)
-    # unknown = db.Column(db.Boolean, nullable=True)
-    # action = db.Column(db.Boolean, nullable=True)
-    # adventure = db.Column(db.Boolean, nullable=True)
-    # animation = db.Column(db.Boolean, nullable=True)
-    # childrens = db.Column(db.Boolean, nullable=True)
-    # comedy = db.Column(db.Boolean, nullable=True)
-    # crime = db.Column(db.Boolean, nullable=True)
-    # documentary = db.Column(db.Boolean, nullable=True)
-    # drama = db.Column(db.Boolean, nullable=True)
-    # fantacy = db.Column(db.Boolean, nullable=True)
-    # film_noir = db.Column(db.Boolean, nullable=True)
-    # horror = db.Column(db.Boolean, nullable=True)
-    # musical = db.Column(db.Boolean, nullable=True)
-    # mistery = db.Column(db.Boolean, nullable=True)
-    # romance = db.Column(db.Boolean, nullable=True)
-    # sci_fi = db.Column(db.Boolean, nullable=True)
-    # thriller = db.Column(db.Boolean, nullable=True)
-    # war = db.Column(db.Boolean, nullable=True)
-    # western = db.Column(db.Boolean, nullable=True)
+
 
     def __repr__(self):
         """Show movie's info"""
