@@ -6,6 +6,7 @@ from flask import Flask, render_template, redirect, request, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Rating, Movie, connect_to_db, db
+from correlation import pearson
 
 app = Flask(__name__)
 
@@ -15,6 +16,49 @@ app.secret_key = "ABC"
 # Normally, if you use an undefined variable in Jinja2, it fails silently.
 # This is horrible. Fix this so that, instead, it raises an error.
 app.jinja_env.undefined = StrictUndefined
+
+def judgmental_eye(user_id, movie_id):
+    """Function that predicts score for movie with movie_id """
+
+    print "\n Prediction calculationg \n"
+    u = User.query.get(user_id) 
+    ratings = u.ratings #list of ratings of this user
+
+    #a list of other users who rated this movie
+    other_ratings = Rating.query.filter_by(movie_id=movie_id).all()
+    other_users = [r.user for r in other_ratings]
+    
+    users = []
+    for other_u in other_users:
+    #creating a pairs
+        u_ratings = {}
+        for r in u.ratings:
+            u_ratings[r.movie_id] = r
+
+        paired_ratings = []
+        for o_rating in other_u.ratings:
+            u_rating = u_ratings.get(o_rating.movie_id)
+            if u_rating is not None:
+                pair = (u_rating.score, o_rating.score)
+                paired_ratings.append(pair)
+
+        if paired_ratings:
+            diff = pearson(paired_ratings)
+
+        else:
+            diff =  0.0
+        pair = (diff, other_u)
+        users.append(pair)
+    sorted_users = sorted(users, reverse=True)
+    top_user = sorted_users[1]
+
+    sim, best_match_user = top_user
+    best_rating = Rating.query.filter_by(
+        movie_id=movie_id,
+        user_id=best_match_user.user_id).one()
+    predicted_rating = sim * best_rating.score
+    print "\n Prediction calculated \n" + str(predicted_rating)
+    return predicted_rating
 
 
 @app.route('/')
@@ -65,7 +109,7 @@ def show_movies(movie_id):
     """Show movies's details"""
 
     movie = Movie.query.get(movie_id)
-    return render_template("movie_profile.html", movie=movie, score=None,
+    return render_template("movie_profile.html", movie=movie, score=None, prediction=None
                                                 )
 
 @app.route("/movies/<int:movie_id>", methods=['POST'])
@@ -73,7 +117,7 @@ def update_movie_rating(movie_id):
     """Update movie rating """
 
     user_rating = request.form.get("rating")
-
+    prediction = None
     if user_rating:
         print '\n' + user_rating + '\n'
         email = session['email'] 
@@ -81,17 +125,20 @@ def update_movie_rating(movie_id):
         print user[0].user_id #user_id
 
         rating = Rating.query.filter_by(movie_id = movie_id, user_id = user[0].user_id).all()
-        print rating[0].score
+
         #if user rated movie, then update rating, else create new value into Ratings table in db
         if rating:
             rating[0].score = user_rating
-            print rating[0].score
+
         else:
-            rating = Rating(score=user_rating,
+            #we'll make a prediction here
+            # prediction = judgmental_eye(user[0].user_id, movie_id)
+            # print "Prediction" + str(prediction)
+            update_rating = Rating(score=user_rating,
                             movie_id=movie_id,
                             user_id=user[0].user_id,
                             )
-            db.session.add(rating)
+            db.session.add(update_rating)
         print rating
         # rating.score = user_rating
         # ratings.update().\
@@ -104,7 +151,9 @@ def update_movie_rating(movie_id):
 
     movie = Movie.query.get(movie_id)
 
-    return render_template("movie_profile.html", movie=movie, score=rating[0].score)
+    return render_template("movie_profile.html", movie=movie, score=rating[0].score, 
+
+                                    )
 
 @app.route('/sign-in', methods=['GET'])
 def render_sign_in():
@@ -121,7 +170,7 @@ def sign_in():
     print email
     print password
     # if user exist - log in and redirect to homepage
-    existing_user = User.query.filter_by(email = email).all()
+    existing_user = User.query.filter_by(email = email).first()
 
     print existing_user
 
@@ -143,7 +192,7 @@ def sign_in():
 
     return redirect("/")
 
-@app.route('/sign-up')
+@app.route('/sign-up', methods=['GET'])
 def sign_up_form():
     """Sign Up page"""
 
@@ -171,7 +220,7 @@ def sign_up():
     db.session.commit()
     session['email'] = email
     flash("%s has been added" % email) 
-    return redirect('/')
+    return redirect("/")
 
 @app.route('/logout')
 def sign_out():
